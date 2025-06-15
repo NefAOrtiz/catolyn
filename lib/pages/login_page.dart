@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -17,23 +17,31 @@ class _RegisterPageState extends State<RegisterPage> {
   final azulPrincipal = const Color.fromARGB(255, 30, 42, 56);
   final azulFormulario = const Color.fromARGB(255, 50, 70, 100);
 
-  void register() async {
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await AuthService.register(
+    final success = await AuthService.login(
       emailController.text.trim(),
       passwordController.text,
     );
 
     if (!mounted) return;
+
     setState(() {
-      error = success ? null : '❌ Este correo ya está registrado';
+      error = success ? null : '❌ Credenciales incorrectas';
     });
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("¡Cuenta creada con éxito!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("¡Acceso exitoso!!")));
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -42,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear Cuenta'),
+        title: const Text('Iniciar Sesión'),
         backgroundColor: azulPrincipal,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -72,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Regístrate',
+                      'Inicia Sesión',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -135,17 +143,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       cursorColor: Colors.white,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Ingresa una contraseña';
+                          return 'Ingresa tu contraseña';
                         }
                         if (value.length < 6) {
-                          return 'Mínimo 6 caracteres';
+                          return 'Debe tener al menos 6 caracteres';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: register,
+                      onPressed: login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -154,7 +162,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
                       child: Text(
-                        'Crear cuenta',
+                        'Entrar',
                         style: TextStyle(fontSize: 16, color: azulFormulario),
                       ),
                     ),

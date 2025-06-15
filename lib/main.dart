@@ -1,9 +1,11 @@
+import 'package:catolyn/pages/add_product_page.dart';
+import 'package:catolyn/pages/product_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'splash_screen.dart';
 import 'welcome_page.dart';
-import 'pages/login_pages.dart';
-import 'pages/register_page.dart';
+import 'package:catolyn/pages/login_page.dart';
+import 'package:catolyn/pages/register_page.dart';
 import 'providers/product_provider.dart';
 
 void main() => runApp(
@@ -28,13 +30,18 @@ class CatolynApp extends StatelessWidget {
         '/home': (context) => CatolynHomePage(),
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
+        '/add-product': (context) => AddProductPage(),
+        '/my-products': (context) => ProductListPage(),
       },
     );
   }
 }
 
+
 class CatolynHomePage extends StatelessWidget {
   final Color fondo = const Color.fromARGB(255, 30, 42, 56);
+
+  const CatolynHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +50,7 @@ class CatolynHomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: fondo,
         elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
         title: const Text(
           'CATOLYN 🮺',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -57,25 +65,37 @@ class CatolynHomePage extends StatelessWidget {
         ],
       ),
       drawer: Drawer(
+  child: Column(
+    children: [
+      const DrawerHeader(
+        decoration: BoxDecoration(color: Color.fromARGB(255, 30, 42, 56)),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            'Menú de navegación',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+      ),
+    
+      Expanded(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color.fromARGB(255, 30, 42, 56)),
-              child: Text(
-                'Menú de navegación',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Inicio'),
               onTap: () => Navigator.pushNamed(context, '/home'),
             ),
             ListTile(
-              leading: Icon(Icons.login),
-              title: Text('Cerrar sesión'),
-              onTap: () => Navigator.pushNamed(context, '/welcome'),
+              leading: Icon(Icons.add),
+              title: Text('Agregar producto'),
+              onTap: () => Navigator.pushNamed(context, '/add-product'),
+            ),
+            ListTile(
+              leading: Icon(Icons.list),
+              title: Text('Mis productos'),
+              onTap: () => Navigator.pushNamed(context, '/my-products'),
             ),
             ListTile(
               leading: Icon(Icons.person_add),
@@ -95,6 +115,16 @@ class CatolynHomePage extends StatelessWidget {
           ],
         ),
       ),
+      
+      ListTile(
+        leading: Icon(Icons.logout),
+        title: Text('Cerrar sesión'),
+        onTap: () => Navigator.pushNamed(context, '/welcome'),
+      ),
+    ],
+  ),
+),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
