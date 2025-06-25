@@ -61,11 +61,11 @@ flutter:
   assets:
 
     - assets/welcome_image1.jpg
-    # - assets/casabe.jpg
+    - assets/casabe.jpg
     - assets/muñeca.jpg
     - assets/shoe.jpeg
-    # - assets/marioneta.jpg
-    # - assets/greca.jpg
+    - assets/marioneta.jpg
+    - assets/greca.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -22,7 +22,7 @@ class CatolynApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Catolyn 🮺',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
