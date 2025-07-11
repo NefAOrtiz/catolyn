@@ -223,6 +223,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           _price = '';
                           _imageFile = null;
                         });
+                        Navigator.pushReplacementNamed(context, '/my-products');
                       }
                     },
                     style: ElevatedButton.styleFrom(

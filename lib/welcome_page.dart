@@ -16,7 +16,7 @@ class WelcomePage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                'assets/welcome_image1.jpg',
+                'assets/logo2.jpg',
                 height: 300,
                 fit: BoxFit.contain,
               ),
@@ -27,7 +27,7 @@ class WelcomePage extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 19),
                 ),
                 child: const Text(
                   "INICIAR SESIÓN",
@@ -41,7 +41,7 @@ class WelcomePage extends StatelessWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.black),
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 19),
                 ),
                 child: const Text(
                   "CREAR CUENTA",

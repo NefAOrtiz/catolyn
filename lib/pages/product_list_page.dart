@@ -1,4 +1,4 @@
-import 'dart:io'; 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
@@ -57,6 +57,13 @@ class ProductListPage extends StatelessWidget {
               ),
             ),
           );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        child: Icon(Icons.add, color: colorTexto),
+        onPressed: () {
+          Navigator.pushNamed(context, '/add-product');
         },
       ),
     );

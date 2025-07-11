@@ -25,10 +25,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
-    _controller.forward(); // Iniciar animación
+    _controller.forward();
 
-    // Redirigir después de 3 segundos
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 5), () {
       Navigator.pushReplacementNamed(context, '/welcome');
     });
   }
@@ -42,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 30, 42, 56), // mismo fondo
+      backgroundColor: const Color.fromARGB(255, 253, 254, 255), // mismo fondo
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -50,20 +49,10 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                'assets/welcome_image1.jpg',
-                width: 150,
-                height: 150,
+                'assets/logo2.jpg',
+                width: 300,
+                height: 300,
                 fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "Catolyn 🧺",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
               ),
             ],
           ),

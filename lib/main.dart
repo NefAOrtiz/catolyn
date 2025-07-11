@@ -21,8 +21,9 @@ class CatolynApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Catolyn 🮺',
-      debugShowCheckedModeBanner: true,
+      title: 'Catolyn ',
+      debugShowCheckedModeBanner: false,
+
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
@@ -36,7 +37,6 @@ class CatolynApp extends StatelessWidget {
     );
   }
 }
-
 
 class CatolynHomePage extends StatelessWidget {
   final Color fondo = const Color.fromARGB(255, 30, 42, 56);
@@ -52,78 +52,84 @@ class CatolynHomePage extends StatelessWidget {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
         title: const Text(
-          'CATOLYN 🮺',
+          'CATOLYN 🧺',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: const [
           Icon(Icons.search, color: Colors.white),
           SizedBox(width: 8),
-          Icon(Icons.favorite_border, color: Color.fromARGB(255, 255, 194, 194)),
+          Icon(
+            Icons.favorite_border,
+            color: Color.fromARGB(255, 255, 194, 194),
+          ),
           SizedBox(width: 8),
-          Icon(Icons.shopping_bag_outlined, color: Color.fromARGB(255, 88, 192, 244)),
+          Icon(
+            Icons.shopping_bag_outlined,
+            color: Color.fromARGB(255, 88, 192, 244),
+          ),
           SizedBox(width: 8),
         ],
       ),
       drawer: Drawer(
-  child: Column(
-    children: [
-      const DrawerHeader(
-        decoration: BoxDecoration(color: Color.fromARGB(255, 30, 42, 56)),
-        child: Align(
-          alignment: Alignment.center,
-          child: Text(
-            'Menú de navegación',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ),
-      ),
-    
-      Expanded(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Inicio'),
-              onTap: () => Navigator.pushNamed(context, '/home'),
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color.fromARGB(255, 30, 42, 56)),
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Menú de navegación',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+              ),
             ),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Agregar producto'),
-              onTap: () => Navigator.pushNamed(context, '/add-product'),
+
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.home),
+                    title: Text('Inicio'),
+                    onTap: () => Navigator.pushNamed(context, '/home'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add),
+                    title: Text('Agregar producto'),
+                    onTap: () => Navigator.pushNamed(context, '/add-product'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list),
+                    title: Text('Mis productos'),
+                    onTap: () => Navigator.pushNamed(context, '/my-products'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.person_add),
+                    title: Text('Registrarse'),
+                    onTap: () => Navigator.pushNamed(context, '/register'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.settings),
+                    title: Text('Configuración'),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.info),
+                    title: Text('Acerca de'),
+                    onTap: () {},
+                  ),
+                ],
+              ),
             ),
+
             ListTile(
-              leading: Icon(Icons.list),
-              title: Text('Mis productos'),
-              onTap: () => Navigator.pushNamed(context, '/my-products'),
-            ),
-            ListTile(
-              leading: Icon(Icons.person_add),
-              title: Text('Registrarse'),
-              onTap: () => Navigator.pushNamed(context, '/register'),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Configuración'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text('Acerca de'),
-              onTap: () {},
+              leading: Icon(Icons.logout),
+              title: Text('Cerrar sesión'),
+              onTap: () => Navigator.pushNamed(context, '/welcome'),
             ),
           ],
         ),
       ),
-      
-      ListTile(
-        leading: Icon(Icons.logout),
-        title: Text('Cerrar sesión'),
-        onTap: () => Navigator.pushNamed(context, '/welcome'),
-      ),
-    ],
-  ),
-),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -132,15 +138,18 @@ class CatolynHomePage extends StatelessWidget {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: ['Hombre', 'Mujer', 'Infantil', 'Sandalias', 'Comida']
-                  .map((e) => Text(
-                        e,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              children:
+                  ['Hombre', 'Mujer', 'Infantil', 'Sandalias', 'Comida']
+                      .map(
+                        (e) => Text(
+                          e,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ))
-                  .toList(),
+                      )
+                      .toList(),
             ),
             const SizedBox(height: 16),
             Container(
@@ -178,7 +187,10 @@ class CatolynHomePage extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               "Amantes de lo hecho en casa, este es su momento",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const Text(
               "Hasta 60% de descuento en productos locales seleccionados.",
@@ -192,10 +204,26 @@ class CatolynHomePage extends StatelessWidget {
               mainAxisSpacing: 8,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildProducto("Casabe con ajo", "12\$ 9\$", 'assets/casabe.jpg'),
-                _buildProducto("Muñeca de hilo", "9\$ 7\$", 'assets/muñeca.jpg'),
-                _buildProducto("Marioneta tradicional", "14\$ 12\$", 'assets/marioneta.jpg'),
-                _buildProducto("Greca artesanal", "100€ 60€", 'assets/greca.jpg'),
+                _buildProducto(
+                  "Casabe con ajo",
+                  "12\$ 9\$",
+                  'assets/casabe.jpg',
+                ),
+                _buildProducto(
+                  "Muñeca de hilo",
+                  "9\$ 7\$",
+                  'assets/muñeca.jpg',
+                ),
+                _buildProducto(
+                  "Marioneta tradicional",
+                  "14\$ 12\$",
+                  'assets/marioneta.jpg',
+                ),
+                _buildProducto(
+                  "Greca artesanal",
+                  "100€ 60€",
+                  'assets/greca.jpg',
+                ),
               ],
             ),
             const SizedBox(height: 16),
