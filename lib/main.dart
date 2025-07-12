@@ -1,4 +1,5 @@
 import 'package:catolyn/pages/add_product_page.dart';
+import 'package:catolyn/pages/edit_product_page.dart';
 import 'package:catolyn/pages/product_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class CatolynApp extends StatelessWidget {
         '/register': (context) => RegisterPage(),
         '/add-product': (context) => AddProductPage(),
         '/my-products': (context) => ProductListPage(),
+        '/edit-product': (context) => EditProductPage(), 
       },
     );
   }

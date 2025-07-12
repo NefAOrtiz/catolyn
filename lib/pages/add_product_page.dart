@@ -1,5 +1,5 @@
-import 'dart:io'; // Para File
-import 'package:image_picker/image_picker.dart'; // Para image_picker
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
@@ -17,22 +17,13 @@ class _AddProductPageState extends State<AddProductPage> {
   String _name = '';
   String _price = '';
   String? _category;
+  File? _imageFile;
 
-  File? _imageFile; // Aquí guardaremos la imagen seleccionada
-
-  final List<String> categorias = [
-    'Hombre',
-    'Mujer',
-    'Infantil',
-    'Sandalias',
-    'Comida',
-  ];
   final Color formularioColor = Color.fromARGB(255, 60, 90, 120);
   final Color colorTexto = Color.fromARGB(255, 30, 42, 56);
 
   final ImagePicker _picker = ImagePicker();
 
-  // Función para seleccionar imagen desde galería
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -42,8 +33,85 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
+  Future<String?> _mostrarDialogoNuevaCategoria(BuildContext context) async {
+    String nueva = '';
+
+    return showDialog<String>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'Nueva categoría',
+              style: TextStyle(
+                color: Color.fromARGB(255, 60, 90, 120),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Escribe la categoría',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color.fromARGB(255, 60, 90, 120),
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color.fromARGB(255, 60, 90, 120),
+                  ),
+                ),
+              ),
+              style: TextStyle(color: Color.fromARGB(255, 60, 90, 120)),
+              onChanged: (value) => nueva = value,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                ),
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 60, 90, 120),
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, nueva),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                ),
+                child: Text(
+                  'Agregar',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 60, 90, 120),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final productProvider = Provider.of<ProductProvider>(context);
+    final categorias = productProvider.categorias;
+
+    if (_category != null && !categorias.contains(_category)) {
+      _category = null;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Agregar Producto"),
@@ -72,7 +140,6 @@ class _AddProductPageState extends State<AddProductPage> {
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 20),
-                  // Mostrar la imagen seleccionada 
                   GestureDetector(
                     onTap: _pickImage,
                     child: Container(
@@ -162,26 +229,50 @@ class _AddProductPageState extends State<AddProductPage> {
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
-                    items:
-                        categorias.map((cat) {
-                          return DropdownMenuItem(
-                            value: cat,
-                            child: Text(
-                              cat,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          );
-                        }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _category = value;
-                      });
+                    items: [
+                      ...categorias.map(
+                        (cat) => DropdownMenuItem(
+                          value: cat,
+                          child: Text(
+                            cat,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: 'add_new',
+                        child: Text(
+                          'Agregar categoría...',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) async {
+                      if (value == 'add_new') {
+                        final nuevaCategoria =
+                            await _mostrarDialogoNuevaCategoria(context);
+                        if (nuevaCategoria != null &&
+                            nuevaCategoria.trim().isNotEmpty) {
+                          productProvider.addCategoria(nuevaCategoria.trim());
+                          setState(() {
+                            _category = nuevaCategoria.trim();
+                          });
+                        }
+                      } else {
+                        setState(() {
+                          _category = value;
+                        });
+                      }
                     },
                     validator:
                         (value) =>
                             value == null ? 'Selecciona una categoría' : null,
                     onSaved: (value) => _category = value,
                   ),
+
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
@@ -205,7 +296,6 @@ class _AddProductPageState extends State<AddProductPage> {
                             name: _name,
                             price: _price,
                             category: _category!,
-    
                             imagePath: _imageFile!.path,
                           ),
                         );
