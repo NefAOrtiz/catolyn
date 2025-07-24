@@ -17,9 +17,14 @@ class _EditProductPageState extends State<EditProductPage> {
   late Product _originalProduct;
   late TextEditingController _nameController;
   late TextEditingController _priceController;
+  late TextEditingController _contactController;
+
   String? _category;
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  String? _status;
+  final List<String> _estados = ['Disponible', 'Pendiente', 'Vendido'];
+
 
   final Color formularioColor = const Color.fromARGB(255, 60, 90, 120);
   final Color colorTexto = const Color.fromARGB(255, 30, 42, 56);
@@ -38,7 +43,12 @@ class _EditProductPageState extends State<EditProductPage> {
       _originalProduct = args;
 
       _nameController = TextEditingController(text: _originalProduct.name);
-      _priceController = TextEditingController(text: _originalProduct.price);
+      _priceController = TextEditingController(text: _originalProduct.price.toString());
+      _contactController = TextEditingController(text: _originalProduct.contact);
+      _status = _originalProduct.status;
+
+
+
       _category = _originalProduct.category;
 
       if (File(_originalProduct.imagePath).existsSync()) {
@@ -55,6 +65,7 @@ class _EditProductPageState extends State<EditProductPage> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _contactController.dispose();
     super.dispose();
   }
 
@@ -150,32 +161,97 @@ class _EditProductPageState extends State<EditProductPage> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: _priceController,
-                    style: const TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Precio',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(
-                        Icons.attach_money,
-                        color: Colors.white70,
+                        controller: _priceController,
+                        style: TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Precio',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          prefixIcon: Icon(
+                            Icons.attach_money,
+                            color: Colors.white70,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.white30),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Campo requerido';
+                          }
+                          if (double.tryParse(value) == null) {
+                            return 'Precio inválido';
+                          }
+                          return null;
+                        },
+                        cursorColor: Colors.white,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white30),
+                      const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _contactController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Contacto',
+                            labelStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.phone,
+                              color: Colors.white70,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white30),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.white),
+                            ),
+                          ),
+                          validator: (value) => value!.isEmpty ? 'Campo requerido' : null,
+                          cursorColor: Colors.white,
+                        ),
+                        const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _status,
+                        dropdownColor: formularioColor,
+                        style: const TextStyle(color: Colors.white),
+                        icon: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.white,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Estado del producto',
+                          labelStyle: const TextStyle(color: Colors.white70),
+                          prefixIcon: const Icon(Icons.info_outline, color: Colors.white70),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.white30),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.white),
+                          ),
+                        ),
+                        items: _estados.map((estado) {
+                          return DropdownMenuItem(
+                            value: estado,
+                            child: Text(estado, style: const TextStyle(color: Colors.white)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _status = value;
+                          });
+                        },
+                        validator: (value) => value == null ? 'Selecciona un estado' : null,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                    ),
-                    validator:
-                        (value) =>
-                            value!.isEmpty || double.tryParse(value) == null
-                                ? 'Precio inválido'
-                                : null,
-                    cursorColor: Colors.white,
-                  ),
+
+
+                  
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _category,
@@ -231,12 +307,23 @@ class _EditProductPageState extends State<EditProductPage> {
                           return;
                         }
 
-                        final updatedProduct = Product(
-                          name: _nameController.text,
-                          price: _priceController.text,
-                          category: _category!,
-                          imagePath: _imageFile!.path,
-                        );
+                        final parsedPrice = double.tryParse(_priceController.text);
+                          if (parsedPrice == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Precio inválido')),
+                            );
+                            return;
+                          }
+
+                          final updatedProduct = Product(
+                            name: _nameController.text.trim(),
+                            price: parsedPrice,
+                            category: _category!,
+                            imagePath: _imageFile!.path,
+                            contact: _contactController.text.trim(),
+                            status: _status!,
+                          );
+
 
                         Provider.of<ProductProvider>(
                           context,
@@ -247,7 +334,8 @@ class _EditProductPageState extends State<EditProductPage> {
                           const SnackBar(content: Text('Producto actualizado')),
                         );
 
-                        Navigator.pop(context);
+                        Navigator.pop(context, true); // Así se devuelve un valor que usaremos para recargar la lista
+
                       }
                     },
                     style: ElevatedButton.styleFrom(

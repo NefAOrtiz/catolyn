@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:catolyn/pages/add_product_page.dart';
 import 'package:catolyn/pages/edit_product_page.dart';
 import 'package:catolyn/pages/product_list_page.dart';
@@ -8,6 +9,21 @@ import 'welcome_page.dart';
 import 'package:catolyn/pages/login_page.dart';
 import 'package:catolyn/pages/register_page.dart';
 import 'providers/product_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+Color getEstadoColor(String status) {
+  switch (status) {
+    case 'Disponible':
+      return Colors.green;
+    case 'Pendiente':
+      return Colors.orange;
+    case 'Vendido':
+      return Colors.red;
+    default:
+      return Colors.grey;
+  }
+}
+
 
 void main() => runApp(
   ChangeNotifierProvider(
@@ -23,7 +39,7 @@ class CatolynApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Catolyn ',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
 
       initialRoute: '/',
       routes: {
@@ -199,35 +215,38 @@ class CatolynHomePage extends StatelessWidget {
               style: TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildProducto(
-                  "Casabe con ajo",
-                  "12\$ 9\$",
-                  'assets/casabe.jpg',
-                ),
-                _buildProducto(
-                  "Muñeca de hilo",
-                  "9\$ 7\$",
-                  'assets/muñeca.jpg',
-                ),
-                _buildProducto(
-                  "Marioneta tradicional",
-                  "14\$ 12\$",
-                  'assets/marioneta.jpg',
-                ),
-                _buildProducto(
-                  "Greca artesanal",
-                  "100€ 60€",
-                  'assets/greca.jpg',
-                ),
-              ],
+            Consumer<ProductProvider>(
+              builder: (context, provider, child) {
+                final productos = provider.products;
+                if (productos.isEmpty) {
+                  return const Text(
+                    "Aún no hay productos añadidos.",
+                    style: TextStyle(color: Colors.white),
+                  );
+                }
+                return GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: productos
+                      .map(
+                      (p) => _buildProducto(
+                        p.name,
+                        "\$${p.price.toString()}",
+                        p.imagePath,
+                        p.contact,
+                        p.status, // 👈 le pasas también el estado
+                        context,
+                      ),
+                    )
+
+                      .toList(),
+                );
+              },
             ),
+
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
@@ -245,33 +264,97 @@ class CatolynHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildProducto(String nombre, String precio, String imagePath) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 46, 60, 77),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => const Placeholder(),
+  Widget _buildProducto(String nombre, String precio, String imagePath, String contacto, String status, BuildContext context) {
+
+  return Container(
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 46, 60, 77),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      children: [
+        GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Contacto del vendedor'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Estado del producto:',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: getEstadoColor(status),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text('Número o contacto:'),
+                    SizedBox(height: 8),
+                    Text(
+                      contacto,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.phone),
+                      label: Text('Llamar'),
+                      onPressed: () async {
+                        final Uri phoneUri = Uri.parse('tel:$contacto');
+                        if (await canLaunchUrl(phoneUri)) {
+                          launchUrl(phoneUri);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('No se pudo abrir la app de llamadas')),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    child: Text('Cerrar'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Container(
+            height: 120,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: imagePath.startsWith('assets/')
+                    ? AssetImage(imagePath) as ImageProvider
+                    : FileImage(File(imagePath)),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            nombre,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          nombre,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          Text(precio, style: const TextStyle(color: Colors.green)),
-        ],
-      ),
-    );
-  }
+        ),
+        Text(precio, style: const TextStyle(color: Colors.green)),
+      ],
+    ),
+  );
+}
 }

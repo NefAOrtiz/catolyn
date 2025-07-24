@@ -15,9 +15,15 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
   String _name = '';
-  String _price = '';
+  double? _price;
+  String _contact = '';
   String? _category;
   File? _imageFile;
+  String? _status;
+  final List<String> _estados = ['Disponible', 'Pendiente', 'Vendido'];
+
+  
+
 
   final Color formularioColor = Color.fromARGB(255, 60, 90, 120);
   final Color colorTexto = Color.fromARGB(255, 30, 42, 56);
@@ -203,14 +209,76 @@ class _AddProductPageState extends State<AddProductPage> {
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
-                    validator:
-                        (value) =>
-                            value!.isEmpty || double.tryParse(value) == null
-                                ? 'Precio inválido'
-                                : null,
-                    onSaved: (value) => _price = value!,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo requerido';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Precio inválido';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => _price = double.tryParse(value!),
                     cursorColor: Colors.white,
                   ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Contacto',
+                      labelStyle: TextStyle(color: Colors.white70),
+                      prefixIcon: Icon(
+                        Icons.phone,
+                        color: Colors.white70,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    validator: (value) =>
+                        value!.isEmpty ? 'Campo requerido' : null,
+                    onSaved: (value) => _contact = value!,
+                    cursorColor: Colors.white,
+                  ),
+                  DropdownButtonFormField<String>(
+                  value: _status,
+                  dropdownColor: Colors.grey[900],
+                  style: const TextStyle(color: Colors.white),
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Estado',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white),
+                    ),
+                  ),
+                  items: _estados.map((estado) {
+                    return DropdownMenuItem(
+                      value: estado,
+                      child: Text(estado, style: const TextStyle(color: Colors.white)),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _status = value;
+                    });
+                  },
+                  validator: (value) => value == null ? 'Selecciona un estado' : null,
+                ),
+
+
+
                   SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _category,
@@ -294,9 +362,11 @@ class _AddProductPageState extends State<AddProductPage> {
                         ).addProduct(
                           Product(
                             name: _name,
-                            price: _price,
+                            price: _price!,
                             category: _category!,
                             imagePath: _imageFile!.path,
+                            contact: _contact,
+                            status: _status!,
                           ),
                         );
 
@@ -310,7 +380,7 @@ class _AddProductPageState extends State<AddProductPage> {
                         setState(() {
                           _category = null;
                           _name = '';
-                          _price = '';
+                          _price = null;
                           _imageFile = null;
                         });
                         Navigator.pushReplacementNamed(context, '/my-products');

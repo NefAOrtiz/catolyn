@@ -184,8 +184,11 @@ class _ProductListPageState extends State<ProductListPage> {
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/add-product');
           if (result == true) {
-            setState(() {});
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Producto agregado exitosamente')),
+            );
           }
+
         },
       ),
     );
