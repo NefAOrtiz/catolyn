@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../providers/product_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:catolyn/services/clouservice.dart';
+
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({super.key});
@@ -392,80 +394,84 @@ class _AddProductPageState extends State<AddProductPage> {
 
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         if (_imageFile == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Row(
                                 children: const [
-                                  Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.white,
-                                  ),
+                                  Icon(Icons.image_not_supported, color: Colors.white),
                                   SizedBox(width: 10),
                                   Text('Por favor, selecciona una imagen'),
                                 ],
                               ),
                               backgroundColor: Colors.redAccent,
                               behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               duration: Duration(seconds: 3),
                             ),
                           );
-
+                          
                           return;
                         }
 
                         _formKey.currentState!.save();
 
-                        Provider.of<ProductProvider>(
-                          context,
-                          listen: false,
-                        ).addProduct(
-                          Product(
-                            name: _name,
-                            price: _price!,
-                            category: _category!,
-                            imagePath: _imageFile!.path,
-                            contact: _contact,
-                            status: _status!,
-                          ),
+                        // Subir imagen a Cloudinary
+                        final imageUrl = await uploadImageToCloudinary(_imageFile!);
+                        if (imageUrl == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al subir imagen a Cloudinary'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                          return;
+                        }
+
+                        final nuevoProducto = Product(
+                          name: _name,
+                          price: _price!,
+                          category: _category!,
+                          imagePath: imageUrl, // <- Guardamos la URL, no la ruta local
+                          contact: _contact,
+                          status: _status!,
                         );
+
+                        Provider.of<ProductProvider>(context, listen: false).addProduct(nuevoProducto);
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Row(
                               children: const [
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.white,
-                                ),
+                                Icon(Icons.check_circle_outline, color: Colors.white),
                                 SizedBox(width: 10),
                                 Text('Producto agregado correctamente'),
                               ],
                             ),
                             backgroundColor: Colors.green,
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             duration: Duration(seconds: 3),
                           ),
                         );
 
                         _formKey.currentState!.reset();
                         setState(() {
-                          _category = null;
+                          _imageFile = null;
                           _name = '';
                           _price = null;
-                          _imageFile = null;
+                          _contact = '';
+                          _category = null;
+                          _status = null;
                         });
+
                         Navigator.pushReplacementNamed(context, '/my-products');
                       }
                     },
+
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 16),

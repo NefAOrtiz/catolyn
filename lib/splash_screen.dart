@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,7 +18,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Controlador de la animación
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -27,8 +27,15 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
+    // Aquí verificamos el estado de autenticación con Firebase
     Timer(const Duration(seconds: 5), () {
-      Navigator.pushReplacementNamed(context, '/welcome');
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/welcome');
+      }
     });
   }
 
@@ -41,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 253, 254, 255), // mismo fondo
+      backgroundColor: const Color.fromARGB(255, 253, 254, 255),
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,

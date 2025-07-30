@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "108415346053",
+    "project_id": "catolyn-1cef9",
+    "storage_bucket": "catolyn-1cef9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:108415346053:android:fa583daae56a0fbdbb50ec",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEuJzp90weANSkFfUBcczBgkNF1JsetnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:108415346053:android:25b4a10e7665e042bb50ec",
+        "android_client_info": {
+          "package_name": "com.example.catolyn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEuJzp90weANSkFfUBcczBgkNF1JsetnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

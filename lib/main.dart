@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:catolyn/pages/about_page.dart';
 import 'package:catolyn/pages/add_product_page.dart';
 import 'package:catolyn/pages/edit_product_page.dart';
@@ -11,6 +11,13 @@ import 'package:catolyn/pages/login_page.dart';
 import 'package:catolyn/pages/register_page.dart';
 import 'providers/product_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Archivo generado por FlutterFire CLI
+import 'package:catolyn/services/auth_service.dart';
+import 'package:catolyn/models/product.dart';
+import 'package:catolyn/pages/favorite_products_page.dart';
+
+
 
 Color getEstadoColor(String status) {
   switch (status) {
@@ -25,12 +32,20 @@ Color getEstadoColor(String status) {
   }
 }
 
-void main() => runApp(
-  ChangeNotifierProvider(
-    create: (_) => ProductProvider(),
-    child: const CatolynApp(),
-  ),
-);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ProductProvider(),
+      child: const CatolynApp(),
+    ),
+  );
+}
+
 
 class CatolynApp extends StatelessWidget {
   const CatolynApp({super.key});
@@ -52,6 +67,7 @@ class CatolynApp extends StatelessWidget {
         '/my-products': (context) => ProductListPage(),
         '/edit-product': (context) => EditProductPage(),
         '/about': (context) => const AboutPage(),
+        '/favorites': (context) => FavoriteProductsPage(),
       },
     );
   }
@@ -122,15 +138,16 @@ class _CatolynHomePageState extends State<CatolynHomePage> {
             },
           ),
           const SizedBox(width: 8),
-          const Icon(
-            Icons.favorite_border,
-            color: Color.fromARGB(255, 255, 194, 194),
+          IconButton(
+            icon: const Icon(
+              Icons.favorite_border,
+              color: Color.fromARGB(255, 255, 194, 194),
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/favorites');
+            },
           ),
-          const SizedBox(width: 8),
-          const Icon(
-            Icons.shopping_bag_outlined,
-            color: Color.fromARGB(255, 88, 192, 244),
-          ),
+
           const SizedBox(width: 8),
         ],
       ),
@@ -195,12 +212,22 @@ class _CatolynHomePageState extends State<CatolynHomePage> {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Cerrar sesión', style: estiloTitulo),
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/welcome');
-            },
-          ),
+          leading: Icon(Icons.logout),
+          title: Text('Cerrar sesión', style: estiloTitulo),
+          onTap: () async {
+            await AuthService.logout(); // Llama al método para cerrar sesión en Firebase
+
+            if (!mounted) return;
+
+            // Vuelve a la pantalla de bienvenida
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/welcome',
+              (route) => false,
+            );
+          },
+        ),
+
         ],
       ),
     );
@@ -350,17 +377,9 @@ class _CatolynHomePageState extends State<CatolynHomePage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children:
                     productos
-                        .map(
-                          (p) => _buildProducto(
-                            p.name,
-                            "\$${p.price}",
-                            p.imagePath,
-                            p.contact,
-                            p.status,
-                            context,
-                          ),
-                        )
-                        .toList(),
+                    .map((p) => _buildProducto(p, context))
+                    .toList(),
+
               );
             },
           ),
@@ -369,181 +388,180 @@ class _CatolynHomePageState extends State<CatolynHomePage> {
     );
   }
 
-  Widget _buildProducto(
-    String nombre,
-    String precio,
-    String imagePath,
-    String contacto,
-    String status,
-    BuildContext context,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 46, 60, 77),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder:
-                    (_) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+  Widget _buildProducto(Product producto, BuildContext context) {
+  final provider = Provider.of<ProductProvider>(context);
+  final esFavorito = provider.isFavorite(producto);
+
+  return Container(
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 46, 60, 77),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      children: [
+        Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Text(
+                      'Contacto del vendedor',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 60, 90, 120),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
                       ),
-                      title: const Text(
-                        'Contacto del vendedor',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 60, 90, 120),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Estado del producto:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                            fontSize: 19,
+                          ),
                         ),
-                      ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Estado del producto:',
+                        const SizedBox(height: 4),
+                        Text(
+                          producto.status,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: getEstadoColor(producto.status),
+                            fontSize: 19,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Número o contacto:',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 19,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          producto.contact,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 19,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.phone, color: Colors.white),
+                          label: const Text(
+                            'Llamar',
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              color: Colors.white,
                               fontSize: 19,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            status,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: getEstadoColor(status),
-                              fontSize: 19,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              60,
+                              90,
+                              120,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Número o contacto:',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 19,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            contacto,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 19,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.phone, color: Colors.white),
-                            label: const Text(
-                              'Llamar',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 19,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                60,
-                                90,
-                                120,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final telefonoLimpio = limpiarNumero(contacto);
-                              final Uri phoneUri = Uri.parse(
-                                'tel:$telefonoLimpio',
-                              );
-                              if (await canLaunchUrl(phoneUri)) {
-                                await launchUrl(
-                                  phoneUri,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      children: const [
-                                        Icon(
-                                          Icons.error_outline,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 10),
-                                        Text(
-                                          'No se pudo abrir la app de llamadas',
-                                        ),
-                                      ],
-                                    ),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    duration: Duration(seconds: 3),
+                          onPressed: () async {
+                            final telefonoLimpio = limpiarNumero(producto.contact);
+                            final Uri phoneUri = Uri.parse('tel:$telefonoLimpio');
+                            if (await canLaunchUrl(phoneUri)) {
+                              await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: const [
+                                      Icon(Icons.error_outline, color: Colors.white),
+                                      SizedBox(width: 10),
+                                      Text('No se pudo abrir la app de llamadas'),
+                                    ],
                                   ),
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                          ),
-                          child: const Text(
-                            'Cerrar',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 60, 90, 120),
-                              fontSize: 19,
-                            ),
-                          ),
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),
-              );
-            },
-            child: Container(
-              height: 120,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image:
-                      imagePath.startsWith('assets/')
-                          ? AssetImage(imagePath) as ImageProvider
-                          : FileImage(File(imagePath)),
-                  fit: BoxFit.cover,
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'Cerrar',
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 60, 90, 120),
+                            fontSize: 19,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  image: DecorationImage(
+                    image: producto.imagePath.startsWith('http')
+                        ? NetworkImage(producto.imagePath)
+                        : AssetImage(producto.imagePath) as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            nombre,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                icon: Icon(
+                  esFavorito ? Icons.favorite : Icons.favorite_border,
+                  color: esFavorito ? Colors.red : Colors.white,
+                ),
+                onPressed: () {
+                  provider.toggleFavorite(producto);
+                },
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          producto.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          Text(precio, style: const TextStyle(color: Colors.green)),
-        ],
-      ),
-    );
-  }
+        ),
+        Text("\$${producto.price}", style: const TextStyle(color: Colors.green)),
+      ],
+    ),
+  );
+}
+
 }

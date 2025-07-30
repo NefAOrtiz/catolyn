@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
@@ -69,14 +69,17 @@ class _ProductListPageState extends State<ProductListPage> {
                   ),
                   child: ListTile(
                     leading:
-                        p.imagePath.isNotEmpty
-                            ? Image.file(
-                              File(p.imagePath),
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            )
-                            : Icon(Icons.image_not_supported, size: 50),
+                      p.imagePath.isNotEmpty
+                        ? Image.network(
+                            p.imagePath,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.broken_image, size: 50),
+                          )
+                        : Icon(Icons.image_not_supported, size: 50),
+
+                            
                     title: Text(
                       p.name,
                       style: TextStyle(

@@ -20,12 +20,15 @@ class _RegisterPageState extends State<RegisterPage> {
   void register() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await AuthService.register(
+    final errorCode = await AuthService.register(
       emailController.text.trim(),
       passwordController.text,
     );
 
-    if (success) {
+    if (!mounted) return;
+
+    if (errorCode == null) {
+      // Registro exitoso
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -40,29 +43,32 @@ class _RegisterPageState extends State<RegisterPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
         ),
       );
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 10),
-              Text("Este correo ya está registrado"),
-            ],
-          ),
-          backgroundColor: const Color.fromARGB(211, 255, 38, 0),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      // Mostrar mensaje según el código de error
+      setState(() {
+        if (errorCode == 'email-already-in-use') {
+          error = '❌ Este correo ya está registrado';
+        } else if (errorCode == 'invalid-email') {
+          error = '❌ El correo no es válido';
+        } else if (errorCode == 'weak-password') {
+          error = '❌ La contraseña es muy débil (mínimo 6 caracteres)';
+        } else {
+          error = '❌ Ocurrió un error. Intenta nuevamente';
+        }
+      });
+
     }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -114,10 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                         labelText: 'Correo electrónico',
                         labelStyle: const TextStyle(color: Colors.white70),
-                        prefixIcon: const Icon(
-                          Icons.email,
-                          color: Colors.white70,
-                        ),
+                        prefixIcon: const Icon(Icons.email, color: Colors.white70),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.white30),
@@ -146,10 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
                         labelStyle: const TextStyle(color: Colors.white70),
-                        prefixIcon: const Icon(
-                          Icons.lock,
-                          color: Colors.white70,
-                        ),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.white30),
